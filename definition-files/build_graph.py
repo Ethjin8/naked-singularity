@@ -223,12 +223,12 @@ def main():
     args = parse_user_input()
     dir = directory_setup(args)
 
-    # if (args.reload_graph != ""):
-    #     reload_graph(args, dir)
-    # else:
-    build_graph(G, edge_list, args)
-    save_graph(G, args, dir)
-    display_graph(G, args, dir)
+    if (args.reload_graph != None):
+        reload_graph(args, dir)
+    else:
+        build_graph(G, edge_list, args)
+        save_graph(G, args, dir)
+        display_graph(G, args, dir)
 
 
 if __name__ == "__main__":
