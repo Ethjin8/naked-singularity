@@ -233,14 +233,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# Add features:
-# Save graph in NetworkX format(in save_graph() function maybe? Using Gephi or pickle packages)
-# Once graphs saved, try to see if can compare two graphs if something is changed
-# Streamline code: split display() up into smaller functions, such as build_graph() and display_graph()
-# Ensure that build_graph.py can work up a level as well(in definition-files)
-# Compute hashing functions MD5 sum and Sha256 sum and attach info to each 
-# node(basically attaching extra information for analysis purposes).
-# They serve as a unique ID for each node, potentially allowing us to compare if a file changed on different days(assuming they are saved properly)
-# Create a subfolder build_history
