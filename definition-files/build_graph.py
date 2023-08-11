@@ -10,13 +10,12 @@ from networkx.drawing.nx_agraph import graphviz_layout
 import matplotlib.image as mpimg
 from pyvis.network import Network
 from IPython.display import HTML
-import regex as re
 import webbrowser
 
 # Packages needed to save graph
 from datetime import date
 from datetime import datetime
-import webbrowser
+
 
 
 def parse_user_input():
@@ -31,10 +30,12 @@ def parse_user_input():
     parser.add_argument('-t', '--filetype', type=str, default='Singularity', choices=['Singularity', 'Docker'], help='File type to search')
     parser.add_argument('-p', '--prefix', type=str, default='Singularity.', help='File naming prefix to search')
     parser.add_argument('-v', '--visualization', type=str, default='networkx', choices=['networkx','pyvis'], help='Choose visualization method')
-    parser.add_argument('-s', '--save', action='store_true', help="Save graph as PNG")
-    parser.add_argument('-f', '--filetype_to_save', type=str, nargs='+', choices=['JPEG', 'GEXF', 'GRAPHML'], default=['PNG'], help='Filetype(s) to use when saving the graph')
-    parser.add_argument('-sd', '--save_directory', type = str, default='/Users/shirreyjin/Downloads/rehs_graphs/', help='Directory to save graph PNG file')
+    parser.add_argument('-f', '--filetype_to_save', type=str, nargs='+', choices=['JPEG', 'GEXF', 'GRAPHML'], help='Filetype(s) to use when saving the graph')
+    parser.add_argument('-sd', '--save_directory', type = str, default='/Users/ethanjin/Downloads/rehs_graphs/', help='Directory to save graph PNG file')
     parser.add_argument('-r', '--reload_graph', type=str, help='Graph to reload')
+    parser.add_argument('-c', '--compare_graphs', action='store_true', help="Compare graphs")
+    parser.add_argument('-g1', '--first_graph', type = str, help='Directory where first graph is')
+    parser.add_argument('-g2', '--second_graph', type = str, help='Directory where second graph is')
 
     args = parser.parse_args()
     return args
@@ -136,8 +137,9 @@ def display_graph(G, args, dir):
         A.layout('dot')
 
         image_format = 'png'
-        if 'JPEG' in args.filetype_to_save:
-            image_format = 'jpg'
+        if args.filetype_to_save != None:
+            if 'JPEG' in args.filetype_to_save:
+                image_format = 'jpg'
 
         # Set labels for each node to include MD5 and SHA256 attributes
         for node in A.nodes():
@@ -180,7 +182,7 @@ def display_graph(G, args, dir):
         pyvis_graph.save_graph(html_file)  # Use save_graph method instead of show
 
         # Automatically open the HTML file using the default web browser
-        webbrowser.open_new_tab("/Users/shirreyjin/naked-singularity/definition-files/build_graph.py")
+        webbrowser.open_new_tab("/Users/ethanjin/naked-singularity/definition-files/build_graph.html")
 
 
 def directory_setup(args):
@@ -203,7 +205,7 @@ def directory_setup(args):
 
 
 def save_graph(G, args, dir):
-    if (args.save):
+    if (args.filetype_to_save != None):
         if 'GEXF' in args.filetype_to_save:
             nx.write_gexf(G, dir + ".gexf")
         if 'GRAPHML' in args.filetype_to_save:
@@ -212,8 +214,26 @@ def save_graph(G, args, dir):
 
 def reload_graph(args, dir):
     R = nx.read_graphml(args.reload_graph)
-    
     display_graph(R, args, dir)
+
+
+def compare_graphs(args):
+    G1 = nx.read_graphml(args.first_graph)
+    G2 = nx.read_graphml(args.second_graph)
+        
+    nodes_in_G1 = set(G1.nodes())
+    nodes_in_G2 = set(G2.nodes())
+
+    nodes_only_in_G1 = nodes_in_G1 - nodes_in_G2
+    nodes_only_in_G2 = nodes_in_G2 - nodes_in_G1
+
+    if (nodes_only_in_G1 == set()):
+        nodes_only_in_G1 = "No nodes missing"
+    if (nodes_only_in_G2 == set()):
+        nodes_only_in_G2 = "No nodes missing"
+
+    print("Nodes only in G1:", nodes_only_in_G1)
+    print("Nodes only in G2:", nodes_only_in_G2)
 
 
 def main():
@@ -225,10 +245,12 @@ def main():
 
     if (args.reload_graph != None):
         reload_graph(args, dir)
+    elif (args.compare_graphs):
+        compare_graphs(args)
     else:
         build_graph(G, edge_list, args)
-        save_graph(G, args, dir)
         display_graph(G, args, dir)
+        save_graph(G, args, dir)
 
 
 if __name__ == "__main__":
